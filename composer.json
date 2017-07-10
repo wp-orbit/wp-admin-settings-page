@@ -1,0 +1,16 @@
+{
+    "name": "wp-orbit/wp-admin-settings-page",
+    "description": "A class for creating WordPress administration pages.",
+    "authors": [
+        {
+            "name": "Marty Eason",
+            "email": "dev@zawntech.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "WPOrbit\\Components\\Administration\\": "code/"
+        }
+    }
+}
