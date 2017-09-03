@@ -118,7 +118,7 @@ new ExampleSettingsPage;
 The settings page is pluggable.
 
 Filters:
-- wp_admin_settings_page_args ($args)
+- wp_admin_settings_page_args_{$class_name} ($args)
 
 Actions:
 - wp_after_settings_page_after_tab_html ($class, $tab)
