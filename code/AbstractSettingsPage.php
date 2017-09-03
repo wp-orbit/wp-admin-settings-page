@@ -69,36 +69,17 @@ class AbstractSettingsPage {
 	 */
 	protected $show_tabs_in_menu = true;
 
+	protected $args = [];
+
 	/**
 	 * AbstractSettingsPage constructor.
 	 *
 	 * @param array $args
 	 */
 	public function __construct( $args = [] ) {
-		if ( isset( $args['capability'] ) ) {
-			$this->capability = $args['capability'];
-		}
-		if ( isset( $args['page_name'] ) ) {
-			$this->page_name = $args['page_name'];
-		}
-		if ( isset( $args['page_slug'] ) ) {
-			$this->page_slug = $args['page_slug'];
-		}
-		if ( isset( $args['parent_slug'] ) ) {
-			$this->parent_slug = $args['parent_slug'];
-		}
-		if ( isset( $args['icon'] ) ) {
-			$this->icon = $args['icon'];
-		}
-		if ( isset( $args['position'] ) ) {
-			$this->position = $args['position'];
-		}
-		if ( isset( $args['tabs'] ) ) {
-			$this->tabs = $args['tabs'];
-		}
-		if ( isset( $args['show_tabs_in_menu'] ) ) {
-			$this->show_tabs_in_menu = $args['show_tabs_in_menu'];
-		}
+
+		// Set args internally.
+		$this->args = $args;
 
 		/**
 		 * Fire save callbacks.
@@ -111,7 +92,39 @@ class AbstractSettingsPage {
 		add_action( 'init', [ $this, 'initialize' ] );
 	}
 
+	/**
+	 * Set arguments on
+	 */
+	protected function apply_arguments() {
+
+		// Add a filter for this class's arguments.
+		$args = apply_filters( 'wp_admin_settings_page_args_' . static::class, $this->args );
+
+		// List class parameters.
+		$keys = [
+			'capability',
+			'icon',
+			'page_name',
+			'page_slug',
+			'parent_slug',
+			'position',
+			'show_tabs_in_menu',
+			'tabs',
+		];
+
+		// Set class parameters.
+		foreach ( $keys as $key ) {
+			if ( isset( $args[ $key ] ) ) {
+				$this->{$key} = $args[ $key ];
+			}
+		}
+	}
+
 	public function initialize() {
+
+		// Set class arguments.
+		$this->apply_arguments();
+
 		add_action( 'admin_menu', [ $this, 'register_menu_page' ] );
 
 		// Show tabs as submenu links?
@@ -240,6 +253,7 @@ class AbstractSettingsPage {
 	 * Render the sub menu tab.
 	 */
 	public function render_page() {
+		$class_name = static::class;
 		$active_tab = $this->get_active_tab();
 		?>
 		<div class="wrap">
@@ -249,7 +263,22 @@ class AbstractSettingsPage {
 			<?php if ( method_exists( $this, $active_tab ) ) : ?>
 				<?php $this->render_feedback(); ?>
 				<form method="post">
-					<?php $this->{$active_tab}(); ?>
+					<?php
+					// Render the tab HTML.
+					ob_start();
+
+					// Add a hook before the tab HTML.
+					do_action( 'wp_admin_settings_page_before_tab_html', $class_name, $active_tab );
+
+					// Call active tab function.
+					$this->{$active_tab}();
+
+					// Add a hook before the tab HTML.
+					do_action( 'wp_admin_settings_page_after_tab_html', $class_name, $active_tab );
+
+					// Filter the HTML.
+					echo apply_filters( 'wp_admin_settings_page_tab_html_' . $class_name, ob_get_clean() ); ?>
+
 					<?php $this->render_nonce(); ?>
 				</form>
 			<?php else : ?>

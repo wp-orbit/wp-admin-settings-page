@@ -113,3 +113,29 @@ to register the settings page into WordPress.
 <?php
 new ExampleSettingsPage;
 ```
+
+### Hooks
+
+The settings page is pluggable.
+
+```php
+<?php
+$class_name = ExampleSettingsPage::class;
+
+// Filter the constructor arguments.
+add_filter( "wp_admin_settings_page_args_{$class_name}", function( $args ) {
+    return $args;
+});
+
+// Do something before inner tab content. 
+add_action( 'wp_admin_settings_page_before_tab_html', function( $class, $tab ) {
+    if ( 'options' === $tab && ExampleSettingsPage::class === $class ) {
+	}
+}, 10, 2 );
+
+// Do something before inner tab content.
+add_action( 'wp_admin_settings_page_before_tab_html', function( $class, $tab ) {
+    if ( 'options' === $tab && ExampleSettingsPage::class === $class ) {
+	}
+}, 10, 2 ); 
+```
