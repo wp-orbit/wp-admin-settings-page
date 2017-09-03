@@ -20,7 +20,7 @@ class ExampleSettingsPage extends AbstractSettingsPage {
 
     public function __construct( $args = [] ) {
 
-        // Define the options for our
+        // Define the options for our settings page.
         $args = [
             /* 0 through 100 */
             'position'    => null,
@@ -80,7 +80,7 @@ class ExampleSettingsPage extends AbstractSettingsPage {
     }
 
     /* When a form is submitted save() is called.
-       Nonce token validation occurs automatically before immediately save() fires. */
+       Nonce token validation occurs automatically before save() fires. */
     public function save() {
 
         // At minimum we need to check for our form fields in $_POST.
