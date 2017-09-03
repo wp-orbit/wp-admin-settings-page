@@ -115,8 +115,14 @@ new ExampleSettingsPage;
 ```
 
 ### Hooks
-
 The settings page is pluggable.
+
+Filters:
+- wp_admin_settings_page_args ($args)
+
+Actions:
+- wp_after_settings_page_after_tab_html ($class, $tab)
+- wp_after_settings_page_before_tab_html ($class, $tab)
 
 ```php
 <?php
@@ -129,13 +135,13 @@ add_filter( "wp_admin_settings_page_args_{$class_name}", function( $args ) {
 
 // Do something before inner tab content. 
 add_action( 'wp_admin_settings_page_before_tab_html', function( $class, $tab ) {
-    if ( 'options' === $tab && ExampleSettingsPage::class === $class ) {
-	}
+    if ( 'options' === $tab && ExampleSettingsPage::class === $class ) {   	
+    }
 }, 10, 2 );
 
-// Do something before inner tab content.
-add_action( 'wp_admin_settings_page_before_tab_html', function( $class, $tab ) {
+// Do something after inner tab content.
+add_action( 'wp_admin_settings_page_after_tab_html', function( $class, $tab ) {
     if ( 'options' === $tab && ExampleSettingsPage::class === $class ) {
-	}
+    }
 }, 10, 2 ); 
 ```
