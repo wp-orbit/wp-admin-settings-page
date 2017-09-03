@@ -82,11 +82,6 @@ class AbstractSettingsPage {
 		$this->args = $args;
 
 		/**
-		 * Fire save callbacks.
-		 */
-		add_action( 'init', [ $this, '_save' ] );
-
-		/**
 		 * Set up the settings page.
 		 */
 		add_action( 'init', [ $this, 'initialize' ] );
@@ -253,6 +248,10 @@ class AbstractSettingsPage {
 	 * Render the sub menu tab.
 	 */
 	public function render_page() {
+
+		// Fire save callback.
+		$this->_save();
+
 		$class_name = static::class;
 		$active_tab = $this->get_active_tab();
 		?>
@@ -338,3 +337,4 @@ class AbstractSettingsPage {
 		$this->save();
 	}
 }
+
