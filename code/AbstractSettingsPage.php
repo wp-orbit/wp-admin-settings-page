@@ -7,300 +7,305 @@ namespace WPOrbit\Components\Administration;
  *
  * @package WPOrbit\Components\Administration
  */
-class AbstractSettingsPage
-{
-    /**
-     * Capability required for the user to access the settings page.
-     *
-     * @var string
-     */
-    protected $capability = 'manage_options';
+class AbstractSettingsPage {
 
-    /**
-     * Settings page title.
-     *
-     * @var mixed|string
-     */
-    protected $page_name = 'Settings Page';
+	/**
+	 * Capability required for the user to access the settings page.
+	 *
+	 * @var string
+	 */
+	protected $capability = 'manage_options';
 
-    /**
-     * @var mixed|string
-     */
-    protected $page_slug = 'settings_page';
+	/**
+	 * Settings page title.
+	 *
+	 * @var mixed|string
+	 */
+	protected $page_name = 'Settings Page';
 
-    /**
-     * @var string
-     */
-    protected $default_tab = '';
+	/**
+	 * @var mixed|string
+	 */
+	protected $page_slug = 'settings_page';
 
-    /**
-     * @var array|mixed [[key => label], ... ]
-     */
-    protected $tabs = [];
+	/**
+	 * A parent slug can be set to nest the settings under an existing page.
+	 * For example- 'index.php', 'edit.php?post_type=post_type_slug', 'tools.php'
+	 *
+	 * @var string
+	 */
+	protected $parent_slug = '';
 
-    /**
-     * @var array Feedback messages for the user.
-     */
-    protected $feedback = [];
+	/**
+	 * @var string
+	 */
+	protected $default_tab = '';
 
-    /**
-     * @var bool
-     */
-    protected $show_tabs_in_menu = true;
+	/**
+	 * URL to icon or a WP Dash Icon
+	 * https://developer.wordpress.org/resource/dashicons
+	 *
+	 * @var string
+	 */
+	protected $icon = '';
 
-    /**
-     * AbstractSettingsPage constructor.
-     *
-     * @param array $args
-     */
-    public function __construct( $args = [] )
-    {
-        if ( isset( $args['capability'] ) )
-        {
-            $this->capability = $args['capability'];
-        }
-        if ( isset( $args['page_name'] ) )
-        {
-            $this->page_name = $args['page_name'];
-        }
-        if ( isset( $args['page_slug'] ) )
-        {
-            $this->page_slug = $args['page_slug'];
-        }
-        if ( isset( $args['tabs'] ) )
-        {
-            $this->tabs = $args['tabs'];
-        }
-        if ( isset( $args['show_tabs_in_menu'] ) )
-        {
-            $this->show_tabs_in_menu = $args['show_tabs_in_menu'];
-        }
+	/**
+	 * @var int
+	 */
+	protected $position = null;
 
-        /**
-         * Fire save callbacks.
-         */
-        add_action( 'init', [$this, '_save'] );
+	/**
+	 * @var array|mixed [[key => label], ... ]
+	 */
+	protected $tabs = [];
 
-        /**
-         * Set up the settings page.
-         */
-        add_action( 'init', [$this, 'initialize'] );
-    }
+	/**
+	 * @var array Feedback messages for the user.
+	 */
+	protected $feedback = [];
 
-    public function initialize()
-    {
-        add_action( 'admin_menu', [$this, 'register_menu_page'] );
+	/**
+	 * @var bool
+	 */
+	protected $show_tabs_in_menu = true;
 
-        // Show tabs as submenu links?
-        if ( $this->show_tabs_in_menu )
-        {
-            add_action( 'admin_menu', [$this, 'register_submenu_links'] );
-        }
-    }
+	/**
+	 * AbstractSettingsPage constructor.
+	 *
+	 * @param array $args
+	 */
+	public function __construct( $args = [] ) {
+		if ( isset( $args['capability'] ) ) {
+			$this->capability = $args['capability'];
+		}
+		if ( isset( $args['page_name'] ) ) {
+			$this->page_name = $args['page_name'];
+		}
+		if ( isset( $args['page_slug'] ) ) {
+			$this->page_slug = $args['page_slug'];
+		}
+		if ( isset( $args['parent_slug'] ) ) {
+			$this->parent_slug = $args['parent_slug'];
+		}
+		if ( isset( $args['icon'] ) ) {
+			$this->icon = $args['icon'];
+		}
+		if ( isset( $args['position'] ) ) {
+			$this->position = $args['position'];
+		}
+		if ( isset( $args['tabs'] ) ) {
+			$this->tabs = $args['tabs'];
+		}
+		if ( isset( $args['show_tabs_in_menu'] ) ) {
+			$this->show_tabs_in_menu = $args['show_tabs_in_menu'];
+		}
 
-    public function add_feedback_message( $message, $type = 'success' )
-    {
-        $this->feedback[] = [
-            'message' => $message,
-            'type'    => $type
-        ];
-    }
+		/**
+		 * Fire save callbacks.
+		 */
+		add_action( 'init', [ $this, '_save' ] );
 
-    /**
-     * Registers the top level administration menu page.
-     */
-    public function register_menu_page()
-    {
-        add_menu_page( $this->page_name, $this->page_name, $this->capability, $this->page_slug, [
-            $this,
-            'render_page'
-        ] );
-    }
+		/**
+		 * Set up the settings page.
+		 */
+		add_action( 'init', [ $this, 'initialize' ] );
+	}
 
-    /**
-     * Add tabs as submenu links.
-     */
-    public function register_submenu_links()
-    {
-        global $submenu;
+	public function initialize() {
+		add_action( 'admin_menu', [ $this, 'register_menu_page' ] );
 
-        // Show tabs as sub menu items?
-        if ( $this->show_tabs_in_menu )
-        {
-            // Loop through tabs.
-            foreach ( $this->tabs as $key => $tab )
-            {
-                // Add tabs as submenu links.
-                $submenu[ $this->page_slug ][] = [
-                    $tab,
-                    $this->capability,
-                    $this->get_base_url() . "&tab={$key}"
-                ];
-            }
-        }
-    }
+		// Show tabs as submenu links?
+		if ( $this->show_tabs_in_menu ) {
+			add_action( 'admin_menu', [ $this, 'register_submenu_links' ] );
+		}
+	}
 
-    /**
-     * @return string
-     */
-    public function get_active_tab()
-    {
-        if ( isset( $_GET['tab'] ) )
-        {
-            return $_GET['tab'];
-        }
+	public function add_feedback_message( $message, $type = 'success' ) {
+		$this->feedback[] = [
+			'message' => $message,
+			'type'    => $type
+		];
+	}
 
-        if ( ! empty( $this->default_tab ) )
-        {
-            return $this->default_tab;
-        }
+	/**
+	 * Registers the administration menu page.
+	 */
+	public function register_menu_page() {
 
-        // Get tab keys.
-        $keys = array_keys( $this->tabs );
+		if ( empty( $this->parent_slug ) ) {
+			add_menu_page( $this->page_name, $this->page_name, $this->capability, $this->page_slug, [
+				$this,
+				'render_page'
+			], $this->icon, $this->position );
+		} else {
+			add_submenu_page( $this->parent_slug, $this->page_name, $this->page_name, $this->capability, $this->page_slug, [
+				$this,
+				'render_page'
+			] );
+		}
+	}
 
-        return $keys[0];
-    }
+	/**
+	 * Add tabs as submenu links.
+	 */
+	public function register_submenu_links() {
+		global $submenu;
 
-    /**
-     * Get base URL to settings page.
-     *
-     * @return string
-     */
-    public function get_base_url()
-    {
-        return "admin.php?page={$this->page_slug}";
-    }
+		// Show tabs as sub menu items?
+		if ( $this->show_tabs_in_menu ) {
+			// Loop through tabs.
+			foreach ( $this->tabs as $key => $tab ) {
+				// Add tabs as submenu links.
+				$submenu[ $this->page_slug ][] = [
+					$tab,
+					$this->capability,
+					$this->get_base_url() . "&tab={$key}"
+				];
+			}
+		}
+	}
 
-    /**
-     * Print tabs.
-     */
-    public function render_tab_controls()
-    {
-        // Get key.
-        $active_tab = $this->get_active_tab();
-        ?>
-        <h2 class="nav-tab-wrapper">
-            <?php foreach ( $this->tabs as $key => $tab ) : ?>
-                <?php
-                $tab_url   = $this->get_base_url() . "&tab={$key}";
-                $tab_class = $key == $active_tab ? 'nav-tab nav-tab-active' : 'nav-tab';
-                ?>
-                <a href="<?php echo $tab_url; ?>" class="<?php echo $tab_class; ?>">
-                    <?php echo $tab; ?>
-                </a>
-            <?php endforeach; ?>
-        </h2>
-        <?php
-    }
+	/**
+	 * @return string
+	 */
+	public function get_active_tab() {
+		if ( isset( $_GET['tab'] ) ) {
+			return $_GET['tab'];
+		}
 
-    /**
-     * Render user feedback messages.
-     */
-    public function render_feedback()
-    {
-        // Loop through feedback messages.
-        foreach ( $this->feedback as $feedback )
-        {
-            $class = '';
+		if ( ! empty( $this->default_tab ) ) {
+			return $this->default_tab;
+		}
 
-            if ( 'success' == $feedback['type'] )
-            {
-                $class = 'updated notice';
-            }
-            if ( 'error' == $feedback['type'] )
-            {
-                $class = 'error notice';
-            }
+		// Get tab keys.
+		$keys = array_keys( $this->tabs );
 
-            ?>
-            <div class="<?php echo $class; ?>">
-                <p><?php echo $feedback['message']; ?></p>
-            </div>
-            <?php
-        }
-    }
+		return $keys[0];
+	}
 
-    /**
-     * Render the sub menu tab.
-     */
-    public function render_page()
-    {
-        $active_tab = $this->get_active_tab();
-        ?>
-        <div class="wrap">
-            <h2><?php echo $this->page_name; ?> - <?php echo $this->tabs[ $active_tab ]; ?></h2>
-            <?php $this->render_tab_controls(); ?>
+	/**
+	 * Get base URL to settings page.
+	 *
+	 * @return string
+	 */
+	public function get_base_url() {
+		return "admin.php?page={$this->page_slug}";
+	}
 
-            <?php if ( method_exists( $this, $active_tab ) ) : ?>
-                <?php $this->render_feedback(); ?>
-                <form method="post">
-                    <?php $this->{$active_tab}(); ?>
-                    <?php $this->render_nonce(); ?>
-                </form>
-            <?php else : ?>
-                <p>Method <?php echo $active_tab; ?>() is not defined in <?php echo static::class; ?>.</p>
-            <?php endif; ?>
-        </div>
-        <?php
-    }
+	/**
+	 * Print tabs.
+	 */
+	public function render_tab_controls() {
+		// Get key.
+		$active_tab = $this->get_active_tab();
+		?>
+		<h2 class="nav-tab-wrapper">
+			<?php foreach ( $this->tabs as $key => $tab ) : ?>
+				<?php
+				$tab_url   = $this->get_base_url() . "&tab={$key}";
+				$tab_class = $key == $active_tab ? 'nav-tab nav-tab-active' : 'nav-tab';
+				?>
+				<a href="<?php echo $tab_url; ?>" class="<?php echo $tab_class; ?>">
+					<?php echo $tab; ?>
+				</a>
+			<?php endforeach; ?>
+		</h2>
+		<?php
+	}
 
-    /**
-     * @return string
-     */
-    public function get_nonce_action()
-    {
-        return 'save-' . $this->page_slug . '-' . $this->get_active_tab();
-    }
+	/**
+	 * Render user feedback messages.
+	 */
+	public function render_feedback() {
+		// Loop through feedback messages.
+		foreach ( $this->feedback as $feedback ) {
+			$class = '';
 
-    /**
-     * Render the form nonce.
-     */
-    public function render_nonce()
-    {
-        wp_nonce_field( $this->get_nonce_action() );
-    }
+			if ( 'success' == $feedback['type'] ) {
+				$class = 'updated notice';
+			}
+			if ( 'error' == $feedback['type'] ) {
+				$class = 'error notice';
+			}
 
-    /**
-     * @return bool
-     */
-    public function verify_nonce()
-    {
-        if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], $this->get_nonce_action() ) )
-        {
-            return false;
-        }
+			?>
+			<div class="<?php echo $class; ?>">
+				<p><?php echo $feedback['message']; ?></p>
+			</div>
+			<?php
+		}
+	}
 
-        return true;
-    }
+	/**
+	 * Render the sub menu tab.
+	 */
+	public function render_page() {
+		$active_tab = $this->get_active_tab();
+		?>
+		<div class="wrap">
+			<h2><?php echo $this->page_name; ?> - <?php echo $this->tabs[ $active_tab ]; ?></h2>
+			<?php $this->render_tab_controls(); ?>
 
-    /** Override in extending classes. */
-    public function save()
-    {
-        // Get the active tab.
-        $active_tab = $this->get_active_tab();
+			<?php if ( method_exists( $this, $active_tab ) ) : ?>
+				<?php $this->render_feedback(); ?>
+				<form method="post">
+					<?php $this->{$active_tab}(); ?>
+					<?php $this->render_nonce(); ?>
+				</form>
+			<?php else : ?>
+				<p>Method <?php echo $active_tab; ?>() is not defined in <?php echo static::class; ?>.</p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
 
-        switch ( $active_tab )
-        {
-            default:
-                $class_name = static::class;
-                $this->add_feedback_message( "Override the save() function in {$class_name}.", 'error' );
-                break;
-        }
-    }
+	/**
+	 * @return string
+	 */
+	public function get_nonce_action() {
+		return 'save-' . $this->page_slug . '-' . $this->get_active_tab();
+	}
 
-    /**
-     * Process POST data.
-     */
-    public function _save()
-    {
-        // Do nothing if $_POST is empty.
-        if ( empty( $_POST ) || ! $this->verify_nonce() )
-        {
-            return;
-        }
+	/**
+	 * Render the form nonce.
+	 */
+	public function render_nonce() {
+		wp_nonce_field( $this->get_nonce_action() );
+	}
 
-        $this->save();
-    }
+	/**
+	 * @return bool
+	 */
+	public function verify_nonce() {
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], $this->get_nonce_action() ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/** Override in extending classes. */
+	public function save() {
+		// Get the active tab.
+		$active_tab = $this->get_active_tab();
+
+		switch ( $active_tab ) {
+			default:
+				$class_name = static::class;
+				$this->add_feedback_message( "Override the save() function in {$class_name}.", 'error' );
+				break;
+		}
+	}
+
+	/**
+	 * Process POST data.
+	 */
+	public function _save() {
+		// Do nothing if $_POST is empty.
+		if ( empty( $_POST ) || ! $this->verify_nonce() ) {
+			return;
+		}
+
+		$this->save();
+	}
 }
-
-
