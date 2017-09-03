@@ -335,6 +335,9 @@ class AbstractSettingsPage {
 		}
 
 		$this->save();
+
+		// Hook for saving extra settings.
+		do_action( 'wp_admin_settings_page_save_settings', static::class, $this );
 	}
 }
 

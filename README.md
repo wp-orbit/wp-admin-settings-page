@@ -121,8 +121,9 @@ Filters:
 - wp_admin_settings_page_args_{$class_name} ($args)
 
 Actions:
-- wp_after_settings_page_after_tab_html ($class, $tab)
-- wp_after_settings_page_before_tab_html ($class, $tab)
+- wp_admin_settings_page_after_tab_html ($class, $tab)
+- wp_admin_settings_page_before_tab_html ($class, $tab)
+- wp_admin_settings_page_save_settings ($class_name, $instance)
 
 ```php
 <?php
@@ -144,4 +145,13 @@ add_action( 'wp_admin_settings_page_after_tab_html', function( $class, $tab ) {
     if ( 'options' === $tab && ExampleSettingsPage::class === $class ) {
     }
 }, 10, 2 ); 
+
+// Hook into the save callback.
+add_action( 'wp_admin_settings_page_save_settings', function( $class, $instance ) {
+    if ( ExampleSettingsPage::class === $class ) {
+    	/** @var $instance ExampleSettingsPage */
+    	$tab = $instance->get_active_tab();
+    	// Do something.
+    }
+}, 10, 2);
 ```
