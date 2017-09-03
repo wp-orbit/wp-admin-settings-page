@@ -56,11 +56,11 @@ class ExampleSettingsPage extends AbstractSettingsPage {
     }
 
     /* Each render function is automatically wrapped in a <form> tag.
-       This includes a nonce token is automatically injected and verified in the save callback,
-       so render functions only need to define our form elements relevant per tab. */
+       Nonce token validation is performed automatically in the save callback,
+       so render functions only need to print our form elements relevant per tab. */
     public function options() {
 
-        // Get our options.
+        // Get options.
         $my_option = get_option( 'my_option', 'Default value' );
         ?>
 
@@ -106,7 +106,8 @@ class ExampleSettingsPage extends AbstractSettingsPage {
 }
 ```
 
-Instantiate the class in your theme or plugin to register functionality:
+Include the class in your theme or plugin, then instantiate the class 
+to register the settings page into WordPress.
 
 ```php
 <?php
